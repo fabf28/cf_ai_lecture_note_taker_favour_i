@@ -1,5 +1,6 @@
 // src/pages/Home.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type RecorderStatus = "idle" | "recording" | "stopped" | "error";
 
@@ -29,6 +30,7 @@ export default function Home() {
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
     const mimeType = useMemo(() => pickSupportedMimeType(), []);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // cleanup object URLs + mic stream on unmount
@@ -129,19 +131,21 @@ export default function Home() {
         fd.append("audio", audioBlob, "lecture.webm");
 
         // TODO: change to your API endpoint (Cloudflare Pages Function or Worker)
-        const res = await fetch("/api/transcribe", {
+        const res = await fetch("/api/summarize", {
             method: "POST",
             body: fd,
         });
+
 
         if (!res.ok) {
             setError(`Upload failed (${res.status}).`);
             return;
         }
 
-        const json = await res.json();
-        console.log("Server response:", json);
+        const data = await res.json();
+        console.log("Server response:", data);
         // You can navigate to /results and pass an ID, etc.
+        navigate("/result", { state: { data } });
     }
 
     return (
