@@ -1,7 +1,7 @@
-export default function Home() {
+export default function Results() {
     return (
         <div>
-            <h1>Home Page</h1>
+            <h1>Result Page</h1>
             <p>Welcome to my app!</p>
         </div>
     );
