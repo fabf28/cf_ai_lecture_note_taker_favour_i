@@ -26,7 +26,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 		// Can access params on `event.payload`
 
 		//step 1 - transcribe audio
-		const transcript = await step.do("my first step", async () => {
+		const text = await step.do("my first step", async () => {
 			// Fetch a list of files from $SOME_SERVICE
 			console.log(event.payload);
 			const inputs = {
@@ -34,13 +34,13 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			};
 			const response = await this.env.AI.run('@cf/openai/whisper', inputs);
 			return {
-				text: response.text,
+				transcript: response.text,
 			};
 		});
 
 		await step.sleep("wait on something", "1 minute");
 
-		//step 2 - generate 
+		//step 2 - generate json
 		const result = await step.do(
 			"turn text into notes",
 			async () => {
@@ -52,7 +52,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					},
 					{
 						role: "user",
-						content: transcript.text,
+						content: text.transcript,
 					},
 				];
 
@@ -66,7 +66,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			},
 		);
 
-		return { transcript: transcript, notes: result };
+		return { transcript: text.transcript, notes: result.notes };
 	}
 }
 export default {
