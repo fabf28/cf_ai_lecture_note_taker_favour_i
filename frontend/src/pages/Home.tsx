@@ -136,16 +136,16 @@ export default function Home() {
             body: fd,
         });
 
-
         if (!res.ok) {
             setError(`Upload failed (${res.status}).`);
             return;
         }
 
         const data = await res.json();
-        console.log("Server response:", data);
+        const id = data.id;
+        console.log("Server response:", id);
         // You can navigate to /results and pass an ID, etc.
-        navigate("/result", { state: { data } });
+        navigate("/loading", { state: { id } });
     }
 
     return (
