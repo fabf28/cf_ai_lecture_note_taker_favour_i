@@ -47,13 +47,41 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				const messages = [
 					{
 						role: "system",
-						content: 'You are note maker. You are creating taking in text that is a lecture transcript. You will first make sense of the transcript, then you will turn it into keyword/phrases matched with definitions. You will then summaraize that into notes. Return the following json structure for the notes: {"notes":[{"phrase": <the phrase>, "definition" : <the defenition>}, {"phrase": <the phrase>, "definition" : <the defenition>}, {"phrase": <the phrase>, "definition" : <the defenition>}, ...], "summary" : <the summary>}'
+						content: `
+						You are an AI that converts lecture transcripts into structured study notes.
 
+						Task:
+						1. Read the lecture transcript.
+						2. Identify important key phrases or concepts.
+						3. Provide a short definition for each phrase.
+						4. Provide a concise overall summary of the lecture.
+
+						Output requirements:
+						- Return ONLY valid JSON.
+						- Do NOT include markdown, code blocks, or explanations.
+						- The response must strictly follow this schema:
+
+						{
+						"notes": [
+							{
+							"phrase": "string",
+							"definition": "string"
+							}
+						],
+						"summary": "string"
+						}
+
+						Rules:
+						- Include 5–15 notes depending on transcript length.
+						- Phrases should be short (1–5 words).
+						- Definitions should be clear and concise.
+						- Summary should be 2–4 sentences.
+						`
 					},
 					{
 						role: "user",
-						content: text.transcript,
-					},
+						content: text.transcript
+					}
 				];
 
 				const inputs = {
