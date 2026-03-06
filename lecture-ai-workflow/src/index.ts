@@ -41,7 +41,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 		await step.sleep("wait on something", "1 minute");
 
 		//step 2 - generate 
-		await step.do(
+		const result = await step.do(
 			"turn text into notes",
 			async () => {
 				const messages = [
@@ -62,9 +62,11 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 
 				const value = await this.env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", inputs);
 				console.log(value);
-				return Response.json(value);
+				return { notes: value }
 			},
 		);
+
+		return { transcript: transcript, notes: result };
 	}
 }
 export default {

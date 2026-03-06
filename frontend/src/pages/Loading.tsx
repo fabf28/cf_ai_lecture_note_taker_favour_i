@@ -1,22 +1,42 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Loading() {
     const location = useLocation();
     const id = location.state?.id;
     console.log(id);
-    const [tick, setTick] = useState(0);
+    const [status, setStatus] = useState("");
+    const dataRef = useRef({ details: { status: "running", error: null, __LOCAL_DEV_STEP_OUTPUTS: Array(0) } });
+    const [scriptStatus, setScriptStatus] = useState("◌");
+    const [notesStatus, setNotesStatus] = useState("◌");
+    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            setTick((prev) => prev + 1); // forces rerender
+            console.log(status);
+            console.log(notesStatus);
+            console.log(scriptStatus);
+            console.log(dataRef.current);
+
+            if (status != "complete")
+                setStatus(dataRef.current.details.status);
+            if (dataRef.current.details.status == "complete")
+                setIsLoading(false);
+            if (dataRef.current.details.__LOCAL_DEV_STEP_OUTPUTS.length > 0)
+                setScriptStatus("✅");
+            if (dataRef.current.details.__LOCAL_DEV_STEP_OUTPUTS.length > 1)
+                setNotesStatus("✅");
+            else if (dataRef.current.details.error)
+                setNotesStatus("Error - Timeout");
 
             // optional API request every 3 seconds
             try {
-                const res = await fetch("/api/status");
+                const res = await fetch("/api/summarize/?id=" + id);
                 const data = await res.json();
+                dataRef.current = data;
                 console.log("Polling response:", data);
             } catch (err) {
                 console.error("Polling failed:", err);
@@ -25,6 +45,12 @@ export default function Loading() {
 
         return () => clearInterval(interval);
     }, []);
+
+    const nextPage = () => {
+        const data = dataRef.current;
+        navigate("/results", { state: { data } });
+    };
+
 
     return (
         <div
@@ -38,32 +64,35 @@ export default function Loading() {
                 fontFamily: "Arial, sans-serif",
             }}
         >
-            <h1>Loading</h1>
 
-            <div style={{ display: "flex", gap: "20px" }}>
-                <div
-                    style={{
-                        width: "30px",
-                        height: "30px",
-                        border: "4px solid #ccc",
-                        borderTop: "4px solid #333",
-                        borderRadius: "50%",
-                        animation: "spin 1s linear infinite",
-                    }}
-                />
-                <div
-                    style={{
-                        width: "12px",
-                        height: "12px",
-                        backgroundColor: "#333",
-                        borderRadius: "50%",
-                        animation: "pulse 1s ease-in-out infinite",
-                    }}
-                />
-            </div>
+            {isLoading &&
+                < div style={{ display: "flex", gap: "20px" }}>
+                    <div
+                        style={{
+                            width: "30px",
+                            height: "30px",
+                            border: "4px solid #ccc",
+                            borderTop: "4px solid #333",
+                            borderRadius: "50%",
+                            animation: "spin 1s linear infinite",
+                        }}
+                    />
+                    <div
+                        style={{
+                            width: "12px",
+                            height: "12px",
+                            backgroundColor: "#333",
+                            borderRadius: "50%",
+                            animation: "pulse 1s ease-in-out infinite",
+                        }}
+                    />
+                </div>
+            }
 
-            <p>Checking status...</p>
-            <p>Refresh count: {tick}</p>
+            <p>Status: {status}</p>
+            <p>Transcript Status: {scriptStatus}</p>
+            <p>Notes Status: {notesStatus}</p>
+            {!isLoading && <button onClick={nextPage}>Next Page</button>}
 
             <style>
                 {`
@@ -78,6 +107,6 @@ export default function Loading() {
           }
         `}
             </style>
-        </div>
+        </div >
     );
 }
