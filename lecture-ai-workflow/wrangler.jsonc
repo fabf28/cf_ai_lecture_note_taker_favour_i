@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "lecture-ai-workflow",
 	"main": "src/index.ts",
-	"compatibility_date": "2026-03-01",
+	"compatibility_date": "2026-03-06",
 	"observability": {
 		"enabled": true
 	},
@@ -22,7 +22,8 @@
 	],
 	"ai": {
 		"binding": "AI"
-	}
+	},
+	"account_id": "3ade72b1f58c68eef42271538a54e09d"
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

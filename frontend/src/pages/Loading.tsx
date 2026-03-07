@@ -8,7 +8,7 @@ export default function Loading() {
     const id = location.state?.id;
     console.log(id);
     const [status, setStatus] = useState("");
-    const dataRef = useRef({ details: { status: "running", error: null, __LOCAL_DEV_STEP_OUTPUTS: Array(0) } });
+    const dataRef = useRef({ details: { status: "", error: null, output: null } });
     const [scriptStatus, setScriptStatus] = useState("◌");
     const [notesStatus, setNotesStatus] = useState("◌");
     const [isLoading, setIsLoading] = useState(true);
@@ -25,11 +25,10 @@ export default function Loading() {
                 setStatus(dataRef.current.details.status);
             if (dataRef.current.details.status == "complete")
                 setIsLoading(false);
-            if (dataRef.current.details.__LOCAL_DEV_STEP_OUTPUTS.length > 0)
+            if (dataRef.current.details.output) {
                 setScriptStatus("✅");
-            if (dataRef.current.details.__LOCAL_DEV_STEP_OUTPUTS.length > 1)
                 setNotesStatus("✅");
-            else if (dataRef.current.details.error)
+            } else if (dataRef.current.details.error)
                 setNotesStatus("Error - Timeout");
 
             // optional API request every 3 seconds
