@@ -5,7 +5,7 @@ export default function Navbar() {
         <header className="navbar container grid-lg">
             <section className="navbar-section">
                 <Link className="navbar-brand mr-2" to="/">
-                    ⌂
+                    Lecture AI
                 </Link>
             </section>
 
