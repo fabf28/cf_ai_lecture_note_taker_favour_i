@@ -1,12 +1,21 @@
 import { useLocation } from "react-router-dom";
 
+interface Note { phrase: string, definition: string };
+
 export default function Results() {
     const location = useLocation();
-    const data = location.state?.data;
+    const result = location.state?.data;
+    console.log("results");
+    console.log(result);
+    const data = JSON.parse(result.output.notes);
     console.log(data);
+    console.log(data.response);
 
     return (
         <div style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+
+
+
             <h1>Lecture Summary</h1>
 
             {/* Summary */}
@@ -19,7 +28,7 @@ export default function Results() {
             <div>
                 <h2>Key Notes</h2>
 
-                {data.notes.map((note, index) => (
+                {data.notes.map((note: Note, index: number) => (
                     <div
                         key={index}
                         style={{

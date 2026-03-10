@@ -5,14 +5,12 @@ export default function Navbar() {
         <header className="navbar container grid-lg">
             <section className="navbar-section">
                 <Link className="navbar-brand mr-2" to="/">
-                    My App
+                    ⌂
                 </Link>
             </section>
 
             <section className="navbar-section">
-                <Link className="btn btn-link" to="/">
-                    Create
-                </Link>
+                AI Lecture Note Taker
             </section>
         </header>
     );

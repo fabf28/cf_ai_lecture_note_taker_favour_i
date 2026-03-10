@@ -149,16 +149,12 @@ export default function Home() {
     }
 
     return (
-        <main className="container grid-lg">
-            <div className="columns">
+        <main className="container grid-lg d-flex flex-centered" style={{ minHeight: "100vh" }}>
+            <div className="columns" style={{ width: "100%" }}>
                 <div className="column col-8 col-mx-auto">
                     <div className="card">
                         <div className="card-header">
-                            <div className="card-title h4">Record a Lecture</div>
-                            <div className="card-subtitle text-gray">
-                                Press <b>Start</b>, record your lecture, then <b>Stop</b>. We’ll
-                                save it as an <code>audioBlob</code>.
-                            </div>
+                            <div className="card-title h3">Record a Lecture</div>
                         </div>
 
                         <div className="card-body">
@@ -169,11 +165,8 @@ export default function Home() {
                             )}
 
                             <div className="mb-2">
-                                <span className="label mr-2">
-                                    Status: {status === "idle" ? "Ready" : status}
-                                </span>
-                                <span className="label label-secondary">
-                                    Format: {mimeType || "browser default"}
+                                <span className="mr-2">
+                                    {status === "idle" ? "" : status}
                                 </span>
                             </div>
 
@@ -219,7 +212,7 @@ export default function Home() {
 
                                     <div className="mt-2">
                                         <button className="btn btn-success" onClick={uploadRecording}>
-                                            Upload for transcription
+                                            Upload for Transcription
                                         </button>
 
                                         <a
@@ -235,7 +228,7 @@ export default function Home() {
                         </div>
 
                         <div className="card-footer text-gray">
-                            Tip: Keep recordings under a few minutes while testing, then scale up.
+                            Tip: Keep recordings small for shorter loading times.
                         </div>
                     </div>
                 </div>
