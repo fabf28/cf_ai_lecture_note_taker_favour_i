@@ -4,19 +4,12 @@ interface Note { phrase: string, definition: string };
 
 export default function Results() {
     const location = useLocation();
-    const result = location.state?.data;
-    console.log("results");
-    console.log(result);
-    const data = JSON.parse(result.output.notes);
-    console.log(data);
-    console.log(data.response);
+    const final = location.state?.data.details.output;
+    const response = final.notes.response + "}";
+    const data = JSON.parse(response);
 
     return (
         <div style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-
-
-
-            <h1>Lecture Summary</h1>
 
             {/* Summary */}
             <div style={{ marginBottom: "30px" }}>
@@ -42,6 +35,12 @@ export default function Results() {
                         <p>{note.definition}</p>
                     </div>
                 ))}
+            </div>
+
+            {/* Transcript */}
+            <div style={{ marginBottom: "30px" }}>
+                <h2>Transcript</h2>
+                <p>{final.transcript}</p>
             </div>
         </div>
     );

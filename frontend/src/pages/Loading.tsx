@@ -6,9 +6,9 @@ import { useEffect, useRef, useState } from "react";
 export default function Loading() {
     const location = useLocation();
     const id = location.state?.id;
-    console.log(id);
-    const [status, setStatus] = useState("");
     const dataRef = useRef({ details: { status: "", error: null, output: null } });
+
+    const [status, setStatus] = useState("");
     const [scriptStatus, setScriptStatus] = useState("◌");
     const [notesStatus, setNotesStatus] = useState("◌");
     const [isLoading, setIsLoading] = useState(true);
@@ -16,10 +16,6 @@ export default function Loading() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            console.log(status);
-            console.log(notesStatus);
-            console.log(scriptStatus);
-            console.log(dataRef.current);
 
             if (status != "complete")
                 setStatus(dataRef.current.details.status);
@@ -29,14 +25,13 @@ export default function Loading() {
                 setScriptStatus("✅");
                 setNotesStatus("✅");
             } else if (dataRef.current.details.error)
-                setNotesStatus("Error - Timeout");
+                setNotesStatus("Error: " + dataRef.current.details.error);
 
             // optional API request every 3 seconds
             try {
                 const res = await fetch("/api/summarize/?id=" + id);
                 const data = await res.json();
                 dataRef.current = data;
-                console.log("Polling response:", data);
             } catch (err) {
                 console.error("Polling failed:", err);
             }

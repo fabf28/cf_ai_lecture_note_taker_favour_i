@@ -143,8 +143,8 @@ export default function Home() {
 
         const data = await res.json();
         const id = data.id;
-        console.log("Server response:", id);
-        // You can navigate to /results and pass an ID, etc.
+
+        //navigate to /results and pass an ID
         navigate("/loading", { state: { id } });
     }
 
