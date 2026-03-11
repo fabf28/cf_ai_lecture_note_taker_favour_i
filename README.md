@@ -45,7 +45,14 @@ This project allows users to upload lecture recordings and automatically generat
 ## Usage
 
 Run website at this link: https://lecture-ai.pages.dev/
-Workflow worker deployed at: [lecture-ai-workflow.favour-iheanyichukwu.workers.dev](http://lecture-ai-workflow.favour-iheanyichukwu.workers.dev)
+Workflow Worker API deployed at: [lecture-ai-workflow.favour-iheanyichukwu.workers.dev](http://lecture-ai-workflow.favour-iheanyichukwu.workers.dev)
+
+1. Run website
+2. Record audio speech.
+3. Upload Transcript
+4. Watch the status updates until the transcript and notes are ready.
+5. Click on "next page" button.
+6. View transcript, notes, and summary on the final screen.
 
 To run github repository locally see "Installation".
 
@@ -68,3 +75,12 @@ npm run build
 
 #Run the server
 npx wrangler pages dev dist
+
+```
+
+---
+
+## Future Improvements and Features
+- More user friendly UI
+- Downloadable transcript and notes
+- On click copy notes feature
