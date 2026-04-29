@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
+import Card from "../../components/Card";
+import { generatePDF } from "../../utils/pdf";
 import "./styles.scss";
-
-interface Note { phrase: string, definition: string };
 
 export default function Results() {
     const location = useLocation();
@@ -10,34 +10,22 @@ export default function Results() {
     const data = JSON.parse(response);
 
     return (
-        <div className="results-container">
-
-            {/* Summary */}
-            <div className="summary-section">
-                <h2>Summary</h2>
-                <p>{data.summary}</p>
+        <main className="container grid-lg d-flex flex-centered" style={{ minHeight: "100vh" }}>
+            <div className="columns" style={{ width: "100%" }}>
+                <div className="column col-8 col-mx-auto">
+                    <Card title="Lecture Notes Ready">
+                        <div className="download-section">
+                            <p>Your lecture has been processed. Click below to download your notes as a PDF.</p>
+                            <button
+                                className="btn btn-lg download-pdf-button"
+                                onClick={() => generatePDF(data, final.transcript)}
+                            >
+                                Download PDF
+                            </button>
+                        </div>
+                    </Card>
+                </div>
             </div>
-
-            {/* Notes */}
-            <div className="notes-section">
-                <h2>Key Notes</h2>
-
-                {data.notes.map((note: Note, index: number) => (
-                    <div
-                        key={index}
-                        className="note-item"
-                    >
-                        <h3>{note.phrase}</h3>
-                        <p>{note.definition}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Transcript */}
-            <div className="transcript-section">
-                <h2>Transcript</h2>
-                <p>{final.transcript}</p>
-            </div>
-        </div>
+        </main>
     );
 }
