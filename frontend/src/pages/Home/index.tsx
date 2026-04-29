@@ -1,6 +1,7 @@
 // src/pages/Home.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Card from "../../components/Card";
 import "./styles.scss";
 
 type RecorderStatus = "idle" | "recording" | "stopped" | "error";
@@ -153,15 +154,10 @@ export default function Home() {
         <main className="container grid-lg d-flex flex-centered" style={{ minHeight: "100vh" }}>
             <div className="columns" style={{ width: "100%" }}>
                 <div className="column col-8 col-mx-auto">
-                    <div className="customcard">
-                        <div className="card-header">
-                            <div className="card-title h3">Record a Lecture</div>
-                        </div>
-
-                        <div className="card-body">
-                            {error && (
-                                <div className="toast toast-error mb-2">
-                                    {error}
+                    <Card title="Record a Lecture">
+                        {error && (
+                            <div className="toast toast-error mb-2">
+                                {error}
                                 </div>
                             )}
 
@@ -227,8 +223,7 @@ export default function Home() {
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </main>
