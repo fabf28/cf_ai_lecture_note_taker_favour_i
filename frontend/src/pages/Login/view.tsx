@@ -7,6 +7,8 @@ type LoginViewProps = {
     setEmail: (email: string) => void;
     password: string;
     setPassword: (password: string) => void;
+    confirmPassword: string;
+    setConfirmPassword: (confirmPassword: string) => void;
     isSignUp: boolean;
     loading: boolean;
     error: string | null;
@@ -20,6 +22,8 @@ export default function LoginView({
     setEmail,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     isSignUp,
     loading,
     error,
@@ -88,6 +92,27 @@ export default function LoginView({
                                     <i className="form-icon icon icon-people"></i>
                                 </div>
                             </div>
+
+                            {isSignUp && (
+                                <div className="form-group mb-4">
+                                    <label className="form-label text-small uppercase font-weight-bold" htmlFor="confirm-password-input">
+                                        Confirm Password
+                                    </label>
+                                    <div className="has-icon-left">
+                                        <input
+                                            type="password"
+                                            id="confirm-password-input"
+                                            className="form-input custom-input"
+                                            placeholder="••••••••"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            disabled={loading}
+                                            required
+                                        />
+                                        <i className="form-icon icon icon-people"></i>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="d-flex flex-column align-items-center">
                                 <button
