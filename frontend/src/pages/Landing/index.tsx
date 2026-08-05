@@ -1,8 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
-
-
 import { useEffect, useRef, useState } from "react";
-import "./styles.scss";
+import LandingView from "./view";
 
 export default function Loading() {
     const location = useLocation();
@@ -33,6 +31,8 @@ export default function Loading() {
                 const res = await fetch("/api/summarize/?id=" + id);
                 const data = await res.json();
                 dataRef.current = data;
+                console.log(id);
+                console.log(data.details);
             } catch (err) {
                 console.error("Polling failed:", err);
             }
@@ -48,19 +48,12 @@ export default function Loading() {
 
 
     return (
-        <div className="loading-container">
-
-            {isLoading &&
-                <div className="loading-spinner">
-                    <div className="spinner" />
-                    <div className="pulse-dot" />
-                </div>
-            }
-
-            <p>Status: {status}</p>
-            <p>Transcript Status: {scriptStatus}</p>
-            <p>Notes Status: {notesStatus}</p>
-            {!isLoading && <button onClick={nextPage}>Next Page</button>}
-        </div>
+        <LandingView
+            status={status}
+            scriptStatus={scriptStatus}
+            notesStatus={notesStatus}
+            isLoading={isLoading}
+            nextPage={nextPage}
+        />
     );
 }

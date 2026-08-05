@@ -1,10 +1,9 @@
 // src/pages/Home.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Card from "../../components/Card";
-import "./styles.scss";
+import HomeView from "./view";
 
-type RecorderStatus = "idle" | "recording" | "stopped" | "error";
+export type RecorderStatus = "idle" | "recording" | "stopped" | "error";
 
 function pickSupportedMimeType() {
     const candidates = [
@@ -127,12 +126,10 @@ export default function Home() {
     async function uploadRecording() {
         if (!audioBlob) return;
 
-        // Prefer sending Blob directly (octet-stream) OR use FormData.
-        // Here’s FormData (most compatible):
         const fd = new FormData();
         fd.append("audio", audioBlob, "lecture.webm");
 
-        // TODO: change to your API endpoint (Cloudflare Pages Function or Worker)
+        // send to cloudflare worker for transcript and notes 
         const res = await fetch("/api/summarize", {
             method: "POST",
             body: fd,
@@ -151,81 +148,15 @@ export default function Home() {
     }
 
     return (
-        <main className="container grid-lg d-flex flex-centered" style={{ minHeight: "100vh" }}>
-            <div className="columns" style={{ width: "100%" }}>
-                <div className="column col-8 col-mx-auto">
-                    <Card title="Record a Lecture">
-                        {error && (
-                            <div className="toast toast-error mb-2">
-                                {error}
-                                </div>
-                            )}
-
-
-                            <div className="btn-group">
-                                <button
-                                    className={`record-circle ${status === "recording" ? "recording" : ""}`}
-                                    onClick={startRecording}
-                                    disabled={status === "recording"}
-                                    title="Start recording"
-                                >
-                                </button>
-
-                                {status === "recording" && (
-                                    <button
-                                        className="stop-square"
-                                        onClick={stopRecording}
-                                        disabled={status !== "recording"}
-                                        title="Stop recording"
-                                    >
-                                    </button>
-                                )}
-
-                                {status === "stopped" && (
-                                    <button
-                                        className="reset-loop"
-                                        onClick={resetRecording}
-                                        title="Reset"
-                                    >
-                                        ↻
-                                    </button>
-                                )}
-                            </div>
-
-
-                            {audioBlob && (
-                                <div className="mt-2">
-                                    <div className="divider" />
-                                    <p className="text-gray m-0">
-                                        Recorded: <b>{(audioBlob.size / 1024).toFixed(1)} KB</b>{" "}
-                                        ({audioBlob.type || "unknown type"})
-                                    </p>
-
-                                    {audioUrl && (
-                                        <div className="mt-2">
-                                            <audio controls src={audioUrl} style={{ width: "100%" }} />
-                                        </div>
-                                    )}
-
-                                    <div className="mt-2">
-                                        <button className="make-notes-button" onClick={uploadRecording} title="Make Notes">
-                                            <img src="/pen.svg" alt="Make Notes" />
-                                        </button>
-
-                                        <a
-                                            className="download-arrow ml-2"
-                                            href={audioUrl ?? undefined}
-                                            download="lecture.webm"
-                                            title="Download"
-                                        >
-                                            ↓
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-                    </Card>
-                </div>
-            </div>
-        </main>
+        <HomeView
+            status={status}
+            error={error}
+            audioBlob={audioBlob}
+            audioUrl={audioUrl}
+            startRecording={startRecording}
+            stopRecording={stopRecording}
+            resetRecording={resetRecording}
+            uploadRecording={uploadRecording}
+        />
     );
 }
