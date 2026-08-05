@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import Card from "../../components/Card";
+import Input from "../../components/Input";
 import "./styles.scss";
 
 type LoginViewProps = {
@@ -55,63 +56,45 @@ export default function LoginView({
                         )}
 
                         <form onSubmit={handleSubmit} className="login-form">
-                            <div className="form-group mb-3">
-                                <label className="form-label text-small uppercase font-weight-bold" htmlFor="email-input">
-                                    Email Address
-                                </label>
-                                <div className="has-icon-left">
-                                    <input
-                                        type="email"
-                                        id="email-input"
-                                        className="form-input custom-input"
-                                        placeholder="you@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        disabled={loading}
-                                        required
-                                    />
-                                    <i className="form-icon icon icon-mail"></i>
-                                </div>
-                            </div>
+                            <Input
+                                id="email-input"
+                                label="Email Address"
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={setEmail}
+                                icon="mail"
+                                disabled={loading}
+                                required
+                                className="mb-3"
+                            />
 
-                            <div className="form-group mb-4">
-                                <label className="form-label text-small uppercase font-weight-bold" htmlFor="password-input">
-                                    Password
-                                </label>
-                                <div className="has-icon-left">
-                                    <input
-                                        type="password"
-                                        id="password-input"
-                                        className="form-input custom-input"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        disabled={loading}
-                                        required
-                                    />
-                                    <i className="form-icon icon icon-people"></i>
-                                </div>
-                            </div>
+                            <Input
+                                id="password-input"
+                                label="Password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={setPassword}
+                                icon="people"
+                                disabled={loading}
+                                required
+                                className="mb-4"
+                            />
 
                             {isSignUp && (
-                                <div className="form-group mb-4">
-                                    <label className="form-label text-small uppercase font-weight-bold" htmlFor="confirm-password-input">
-                                        Confirm Password
-                                    </label>
-                                    <div className="has-icon-left">
-                                        <input
-                                            type="password"
-                                            id="confirm-password-input"
-                                            className="form-input custom-input"
-                                            placeholder="••••••••"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            disabled={loading}
-                                            required
-                                        />
-                                        <i className="form-icon icon icon-people"></i>
-                                    </div>
-                                </div>
+                                <Input
+                                    id="confirm-password-input"
+                                    label="Confirm Password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChange={setConfirmPassword}
+                                    icon="people"
+                                    disabled={loading}
+                                    required
+                                    className="mb-4"
+                                />
                             )}
 
                             <div className="d-flex flex-column align-items-center">
