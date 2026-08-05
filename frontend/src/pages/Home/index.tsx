@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeView from "./view";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 export type RecorderStatus = "idle" | "recording" | "stopped" | "error";
 
@@ -20,6 +22,8 @@ function pickSupportedMimeType() {
 }
 
 export default function Home() {
+    const { session } = useAuth();
+
     const [status, setStatus] = useState<RecorderStatus>("idle");
     const [error, setError] = useState<string | null>(null);
 
@@ -124,15 +128,29 @@ export default function Home() {
     }
 
     async function uploadRecording() {
-        if (!audioBlob) return;
+        if (!audioBlob || !session) return;
 
-        const fd = new FormData();
-        fd.append("audio", audioBlob, "lecture.webm");
+        const path = `${session.user.id}/${crypto.randomUUID()}.webm`;
+
+        const { error } = await supabase.storage
+            .from('recordings')
+            .upload(path, audioBlob, {
+                contentType: 'audio/webm',
+            });
+
+        if (error) {
+            setError(`Upload failed (${error.message}).`);
+            return;
+        }
 
         // send to cloudflare worker for transcript and notes 
         const res = await fetch("/api/summarize", {
             method: "POST",
-            body: fd,
+            headers: {
+                "Authorization": `Bearer ${session.access_token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(path),
         });
 
         if (!res.ok) {

@@ -12,5 +12,8 @@
 		"@types/node": "^25.3.5",
 		"typescript": "^5.0.4",
 		"wrangler": "^4.119.0"
+	},
+	"dependencies": {
+		"@supabase/server": "^1.4.1"
 	}
 }

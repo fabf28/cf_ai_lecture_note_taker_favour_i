@@ -3,19 +3,36 @@ import {
 	WorkflowEvent,
 	WorkflowStep,
 } from "cloudflare:workers";
+import { getSupabaseAdmin, authenticateRequest } from "./lib/supabase";
 
 type Params = {
-	audio: any,
-	type: any
+	path: string;
 };
 
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 	async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
 
+		//step 0 - download audio from Supabase
+		const audioData = await step.do("download audio from supabase", async () => {
+			const path = event.payload.path;
+			const supabase = getSupabaseAdmin(this.env);
+
+			const { data, error } = await supabase.storage
+				.from('recordings')
+				.download(path);
+
+			if (error) {
+				throw error;
+			}
+
+			const buffer = await data.arrayBuffer();
+			return Array.from(new Uint8Array(buffer));
+		});
+
 		//step 1 - transcribe audio
 		const text = await step.do("transcribe audio recording", async () => {
 			const inputs = {
-				audio: event.payload.audio
+				audio: audioData
 			};
 			const response = await this.env.AI.run('@cf/openai/whisper', inputs);
 			return {
@@ -79,8 +96,9 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 		return { transcript: text.transcript, notes: result.notes };
 	}
 }
+
 export default {
-	async fetch(req: Request, env: Env): Promise<Response> {
+	async fetch(req: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {
 		let url = new URL(req.url);
 
 		if (url.pathname.startsWith("/favicon")) {
@@ -96,15 +114,45 @@ export default {
 			});
 		}
 
+		// Authenticate request using Supabase JWT
+		const { error: authError } = await authenticateRequest(req, env);
+
+		if (authError) {
+			return Response.json({
+				error: authError.message,
+				code: authError.code
+			}, {
+				status: authError.status
+			});
+		}
+
 		// Spawn a new instance and return the ID and status
-		const form = await req.formData();
-		const audio = form.get("audio");
-		const buffer = await audio!.arrayBuffer();
+
+		//ensure path is string
+		let path = "";
+		const contentType = req.headers.get("content-type") || "";
+		if (contentType.includes("application/json")) {
+			const body = (await req.json()) as any;
+			if (typeof body === "string") {
+				path = body;
+			} else if (body && typeof body === "object" && "path" in body) {
+				path = body.path;
+			}
+		} else {
+			// fallback to text
+			path = await req.text();
+		}
+
+		//path clean up
+		path = path.trim().replace(/^"|"$/g, "");
+
+		if (!path) {
+			return Response.json({ error: "Missing path parameter" }, { status: 400 });
+		}
 
 		const instance = await env.MY_WORKFLOW.create({
 			params: {
-				audio: Array.from(new Uint8Array(buffer)),
-				type: audio!.type
+				path: path
 			}
 		});
 
