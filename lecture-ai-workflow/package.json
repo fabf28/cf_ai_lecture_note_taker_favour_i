@@ -10,6 +10,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^25.3.5",
+		"supabase": "^2.111.0",
 		"typescript": "^5.0.4",
 		"wrangler": "^4.119.0"
 	},
