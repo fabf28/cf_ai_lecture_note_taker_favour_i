@@ -18,13 +18,13 @@ export default function Loading() {
 
             if (status != "complete")
                 setStatus(dataRef.current.details.status);
-            if (dataRef.current.details.status == "complete")
+            if (dataRef.current.details.status == "complete" || dataRef.current.details.status == "errored")
                 setIsLoading(false);
             if (dataRef.current.details.output) {
                 setScriptStatus("✅");
                 setNotesStatus("✅");
             } else if (dataRef.current.details.error)
-                setNotesStatus("Error: " + dataRef.current.details.error);
+                setNotesStatus("Error: " + (dataRef.current.details.error as any).message);
 
             // optional API request every 3 seconds
             try {
@@ -43,7 +43,7 @@ export default function Loading() {
 
     const nextPage = () => {
         const data = dataRef.current;
-        navigate("/results", { state: { data } });
+        navigate("/results", { state: { data, status } });
     };
 
 
