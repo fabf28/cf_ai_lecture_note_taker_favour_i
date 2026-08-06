@@ -11,6 +11,7 @@ export interface HomeViewProps {
     stopRecording: () => void;
     resetRecording: () => void;
     uploadRecording: () => void;
+    onDownloadAudio: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export default function HomeView({
@@ -22,6 +23,7 @@ export default function HomeView({
     stopRecording,
     resetRecording,
     uploadRecording,
+    onDownloadAudio,
 }: HomeViewProps) {
     return (
         <main className="container grid-lg d-flex flex-centered" style={{ minHeight: "100vh" }}>
@@ -88,7 +90,7 @@ export default function HomeView({
                                     <a
                                         className="download-arrow ml-2"
                                         href={audioUrl ?? undefined}
-                                        download="lecture.webm"
+                                        onClick={onDownloadAudio}
                                         title="Download"
                                     >
                                         ↓

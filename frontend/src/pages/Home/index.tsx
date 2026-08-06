@@ -165,6 +165,23 @@ export default function Home() {
         navigate("/loading", { state: { id } });
     }
 
+    const handleDownloadAudio = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        if (!audioUrl) return;
+
+        const userInput = window.prompt("Enter a name for your audio file:", "lecture");
+        if (userInput === null) return; // User cancelled
+
+        const fileName = userInput.trim() ? `${userInput.trim()}.webm` : "lecture.webm";
+
+        const link = document.createElement("a");
+        link.href = audioUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <HomeView
             status={status}
@@ -175,6 +192,7 @@ export default function Home() {
             stopRecording={stopRecording}
             resetRecording={resetRecording}
             uploadRecording={uploadRecording}
+            onDownloadAudio={handleDownloadAudio}
         />
     );
 }
