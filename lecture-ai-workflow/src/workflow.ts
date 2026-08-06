@@ -4,7 +4,6 @@ import {
 	WorkflowStep,
 } from "cloudflare:workers";
 import { getSupabaseAdmin } from "./lib/supabase";
-import { error } from "console";
 
 export type Params = {
 	path: string;
@@ -27,7 +26,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					.download(path);
 
 				if (error) {
-					throw error;
+					throw new Error(error.message || JSON.stringify(error));
 				}
 
 				const buffer = await data.arrayBuffer();
@@ -135,7 +134,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				.single();
 
 			if (error) {
-				throw error;
+				throw new Error(error.message || JSON.stringify(error));
 			}
 
 			return data as { id: number };
@@ -169,7 +168,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					.insert(rowsToInsert);
 
 				if (error) {
-					throw error;
+					throw new Error(error.message || JSON.stringify(error));
 				}
 			}
 		});
