@@ -31,13 +31,11 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 
 				const buffer = await data.arrayBuffer();
 
-				const audioData = Array.from(new Uint8Array(buffer));
+				const base64 = Buffer.from(buffer).toString('base64')
 
-				const inputs = {
-					audio: audioData
-				};
-				const response = await this.env.AI.run('@cf/openai/whisper', inputs);
-
+				const response = await this.env.AI.run('@cf/openai/whisper-large-v3-turbo', {
+					audio: base64,
+				})
 
 				return {
 					transcript: response.text,
