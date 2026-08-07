@@ -36,13 +36,15 @@ export default {
 
 		//ensure path is string
 		let path = "";
+		let name = "Untitled Lecture";
 		const contentType = req.headers.get("content-type") || "";
 		if (contentType.includes("application/json")) {
 			const body = (await req.json()) as any;
 			if (typeof body === "string") {
 				path = body;
-			} else if (body && typeof body === "object" && "path" in body) {
-				path = body.path;
+			} else if (body && typeof body === "object") {
+				if ("path" in body) path = body.path;
+				if ("name" in body) name = body.name;
 			}
 		} else {
 			// fallback to text
@@ -58,7 +60,8 @@ export default {
 
 		const instance = await env.MY_WORKFLOW.create({
 			params: {
-				path: path
+				path: path,
+				name: name
 			}
 		});
 

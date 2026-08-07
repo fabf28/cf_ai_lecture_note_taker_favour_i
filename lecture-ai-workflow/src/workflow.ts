@@ -7,10 +7,21 @@ import { getSupabaseAdmin } from "./lib/supabase";
 
 export type Params = {
 	path: string;
+	name: string;
 };
 
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 	async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
+
+		const getResponseText = (notesObj: any): string => {
+			if (!notesObj) return "";
+			if (typeof notesObj === "string") return notesObj.trim();
+			if (typeof notesObj.response === "string") return notesObj.response.trim();
+			if (notesObj.response && typeof notesObj.response.toString === "function") {
+				return notesObj.response.toString().trim();
+			}
+			return JSON.stringify(notesObj).trim();
+		};
 
 		//step 0 - download audio from Supabase
 		//const audioData = await step.do("download audio from supabase", async () => {
@@ -113,7 +124,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 
 			let summary = "";
 			try {
-				const responseText = (result.notes as any).response.trim();
+				const responseText = getResponseText(result.notes);
 				const fullJsonText = responseText.endsWith("}") ? responseText : responseText + "}";
 				const parsed = JSON.parse(fullJsonText);
 				summary = parsed.summary || "";
@@ -126,7 +137,9 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				.insert({
 					recording_path: path,
 					transcript: text.transcript,
-					summary: summary
+					summary: summary,
+					name: event.payload.name,
+					user_id: path.split('/')[0]
 				})
 				.select('id')
 				.single();
@@ -145,7 +158,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 
 			let notesList: { phrase: string; definition: string }[] = [];
 			try {
-				const responseText = (result.notes as any).response.trim();
+				const responseText = getResponseText(result.notes);
 				const fullJsonText = responseText.endsWith("}") ? responseText : responseText + "}";
 				const parsed = JSON.parse(fullJsonText);
 				notesList = parsed.notes || [];
@@ -171,6 +184,6 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			}
 		});
 
-		return { lecture_id: lectureDbRow.id, transcript: text.transcript, notes: result.notes };
+		return { lecture_id: lectureDbRow.id, name: event.payload.name, transcript: text.transcript, notes: result.notes };
 	}
 }

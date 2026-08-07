@@ -8,13 +8,16 @@ export interface NoteItem {
 export interface LectureNotesData {
 	notes: NoteItem[];
 	summary: string;
+	name: string;
 }
 
 /**
- * Fetches notes and summary for a given lecture ID from Supabase and formats
- * the output to match the shape: { notes: Array<{ phrase, definition }>, summary: string }
+ * Fetches notes, summary, and name for a given lecture ID from Supabase and formats
+ * the output to match the shape: { notes: Array<{ phrase, definition }>, summary: string, name: string }
  */
 export async function getLectureNotes(lectureId: number | string): Promise<LectureNotesData> {
+
+
 	// 1. Fetch the notes (keywords & definitions)
 	const { data: notesData, error: notesError } = await supabase
 		.from("notes")
@@ -30,20 +33,27 @@ export async function getLectureNotes(lectureId: number | string): Promise<Lectu
 		definition: item.definition || "",
 	}));
 
-	// 2. Fetch the lecture summary
+	// 2. Fetch the lecture summary and name
 	let summary = "";
+	let name = "Untitled Lecture";
 	const { data: lectureData, error: lectureError } = await supabase
 		.from("lectures")
 		.select("*")
 		.eq("id", lectureId)
 		.single();
 
-	if (!lectureError && lectureData) {
+	if (lectureError) {
+		throw new Error(`Failed to fetch lecture: ${lectureError.message}`);
+	}
+
+	if (lectureData) {
 		summary = (lectureData as any).summary || "";
+		name = (lectureData as any).name || "Untitled Lecture";
 	}
 
 	return {
 		notes,
 		summary,
+		name,
 	};
 }

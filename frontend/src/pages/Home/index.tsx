@@ -130,6 +130,10 @@ export default function Home() {
     async function uploadRecording() {
         if (!audioBlob || !session) return;
 
+        const userInput = window.prompt("Enter a name for this lecture:", "My Lecture");
+        if (userInput === null) return; // User cancelled notes creation
+        const lectureName = userInput.trim() || "Untitled Lecture";
+
         const path = `${session.user.id}/${crypto.randomUUID()}.webm`;
 
         const { error } = await supabase.storage
@@ -150,7 +154,7 @@ export default function Home() {
                 "Authorization": `Bearer ${session.access_token}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(path),
+            body: JSON.stringify({ path, name: lectureName }),
         });
 
         if (!res.ok) {

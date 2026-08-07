@@ -8,29 +8,49 @@ export default function Results() {
     const location = useLocation();
     const status = location.state?.status;
 
-    //TODO: update to typescript methods
     let lectureId = "";
     let transcript = "";
     let response = "";
-
+    const backupName = location.state?.data?.details?.params?.name;
 
     if (status === "errored") {
-        const final = location.state?.data.details.__LOCAL_DEV_STEP_OUTPUTS;
-        response = final[1]?.notes.response + "\"defenition\": \"\"}]}";
+        const final = location.state?.data?.details?.__LOCAL_DEV_STEP_OUTPUTS || [];
+        response = final[1]?.notes?.response || "";
+
+        // Keep the recovery fallback if the response was cut off
+        if (response && !response.includes("}]")) {
+            response = response + "\"defenition\": \"\"}]}";
+        }
         console.log(response);
-        lectureId = final?.lecture_id || "";
-        transcript = final?.transcript || "";
-    }
-    else if (status === "complete") {
-        const final = location.state?.data.details.output;
-        response = final?.notes.response + "}";
+
         transcript = final[0]?.transcript || "";
         if (final.length > 2) {
-            lectureId = final[2]?.lecture_id || "";
+            lectureId = final[2]?.id || "";
         }
     }
-    const data = JSON.parse(response);
+    else if (status === "complete") {
+        const final = location.state?.data?.details?.output;
+        if (final) {
+            response = final.notes?.response || "";
+            transcript = final.transcript || "";
+            lectureId = final.lecture_id || "";
+        }
+    }
 
+    let data = { notes: [], summary: "" };
+    try {
+        if (response) {
+            const trimmed = response.trim();
+            try {
+                data = JSON.parse(trimmed);
+            } catch {
+                data = JSON.parse(trimmed + "}");
+            }
+        }
+    } catch (err) {
+        console.error("Failed to parse response JSON:", err);
+    }
+    console.log(data);
     const [notesData, setNotesData] = useState<LectureNotesData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -38,19 +58,26 @@ export default function Results() {
         if (lectureId) {
             getLectureNotes(lectureId)
                 .then((fetchedData) => {
+                    console.log(fetchedData);
                     setNotesData(fetchedData);
                     setLoading(false);
                 })
                 .catch((err) => {
                     console.error("Failed to load lecture notes from database. Loaded from memory:", err);
-                    setNotesData(data);
+                    setNotesData({
+                        ...data,
+                        name: backupName
+                    });
                     setLoading(false);
                 });
         } else {
-            setNotesData(data);
+            setNotesData({
+                ...data,
+                name: backupName
+            });
             setLoading(false);
         }
-    }, [lectureId]);
+    }, [lectureId, data, backupName]);
 
     const handleDownload = () => {
         if (notesData) {
