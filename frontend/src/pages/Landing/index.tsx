@@ -1,13 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-
-
 import { useEffect, useRef, useState } from "react";
-import "./styles.scss";
+import LandingView from "./view";
 
 export default function Loading() {
     const location = useLocation();
     const id = location.state?.id;
-    const dataRef = useRef({ details: { status: "", error: null, output: null } });
+    const dataRef = useRef({ details: { status: "", error: null, output: { lecture_id: "", name: "", transcript: "", notes: "" } } });
 
     const [status, setStatus] = useState("");
     const [scriptStatus, setScriptStatus] = useState("◌");
@@ -26,13 +24,15 @@ export default function Loading() {
                 setScriptStatus("✅");
                 setNotesStatus("✅");
             } else if (dataRef.current.details.error)
-                setNotesStatus("Error: " + dataRef.current.details.error);
+                setNotesStatus("Error: " + (dataRef.current.details.error as any).message);
 
             // optional API request every 3 seconds
             try {
                 const res = await fetch("/api/summarize/?id=" + id);
                 const data = await res.json();
                 dataRef.current = data;
+                console.log(id);
+                console.log(data.details);
             } catch (err) {
                 console.error("Polling failed:", err);
             }
@@ -43,24 +43,20 @@ export default function Loading() {
 
     const nextPage = () => {
         const data = dataRef.current;
-        navigate("/results", { state: { data } });
+        const lectureId = dataRef.current.details.output?.lecture_id;
+        const route = `/results/${lectureId}`;
+        console.log(route);
+        navigate(route, { state: { data, status, fromLanding: true } });
     };
 
 
     return (
-        <div className="loading-container">
-
-            {isLoading &&
-                <div className="loading-spinner">
-                    <div className="spinner" />
-                    <div className="pulse-dot" />
-                </div>
-            }
-
-            <p>Status: {status}</p>
-            <p>Transcript Status: {scriptStatus}</p>
-            <p>Notes Status: {notesStatus}</p>
-            {!isLoading && <button onClick={nextPage}>Next Page</button>}
-        </div>
+        <LandingView
+            status={status}
+            scriptStatus={scriptStatus}
+            notesStatus={notesStatus}
+            isLoading={isLoading}
+            nextPage={nextPage}
+        />
     );
 }

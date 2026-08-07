@@ -1,86 +1,10 @@
-import {
-	WorkflowEntrypoint,
-	WorkflowEvent,
-	WorkflowStep,
-} from "cloudflare:workers";
+import { authenticateRequest } from "./lib/supabase";
+import type { Params } from "./workflow";
 
-type Params = {
-	audio: any,
-	type: any
-};
+export { MyWorkflow } from "./workflow";
 
-export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
-	async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
-
-		//step 1 - transcribe audio
-		const text = await step.do("transcribe audio recording", async () => {
-			const inputs = {
-				audio: event.payload.audio
-			};
-			const response = await this.env.AI.run('@cf/openai/whisper', inputs);
-			return {
-				transcript: response.text,
-			};
-		});
-
-		//step 2 - generate json
-		const result = await step.do(
-			"turn text into notes",
-			async () => {
-				const messages = [
-					{
-						role: "system",
-						content: `
-						You are an AI that converts lecture transcripts into structured study notes.
-
-						Task:
-						1. Read the lecture transcript.
-						2. Identify important key phrases or concepts.
-						3. Provide a short definition for each phrase.
-						4. Provide a concise overall summary of the lecture.
-
-						Output requirements:
-						- Return ONLY valid JSON.
-						- Do NOT include markdown, code blocks, or explanations.
-						- The response must strictly follow this schema:
-
-						{
-						"notes": [
-							{
-							"phrase": "string",
-							"definition": "string"
-							}
-						],
-						"summary": "string"
-						}
-
-						Rules:
-						- Include 5–15 notes depending on transcript length.
-						- Phrases should be short (1–5 words).
-						- Definitions should be clear and concise.
-						- Summary should be 2–4 sentences.
-						`
-					},
-					{
-						role: "user",
-						content: text.transcript
-					}
-				];
-
-				const inputs = {
-					messages: messages
-				};
-
-				const value = await this.env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", inputs);
-				return { notes: value };
-			},
-		);
-
-		return { transcript: text.transcript, notes: result.notes };
-	}
-}
 export default {
-	async fetch(req: Request, env: Env): Promise<Response> {
+	async fetch(req: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {
 		let url = new URL(req.url);
 
 		if (url.pathname.startsWith("/favicon")) {
@@ -96,15 +20,48 @@ export default {
 			});
 		}
 
+		// Authenticate request using Supabase JWT
+		const { error: authError } = await authenticateRequest(req, env);
+
+		if (authError) {
+			return Response.json({
+				error: authError.message,
+				code: authError.code
+			}, {
+				status: authError.status
+			});
+		}
+
 		// Spawn a new instance and return the ID and status
-		const form = await req.formData();
-		const audio = form.get("audio");
-		const buffer = await audio!.arrayBuffer();
+
+		//ensure path is string
+		let path = "";
+		let name = "Untitled Lecture";
+		const contentType = req.headers.get("content-type") || "";
+		if (contentType.includes("application/json")) {
+			const body = (await req.json()) as any;
+			if (typeof body === "string") {
+				path = body;
+			} else if (body && typeof body === "object") {
+				if ("path" in body) path = body.path;
+				if ("name" in body) name = body.name;
+			}
+		} else {
+			// fallback to text
+			path = await req.text();
+		}
+
+		//path clean up
+		path = path.trim().replace(/^"|"$/g, "");
+
+		if (!path) {
+			return Response.json({ error: "Missing path parameter" }, { status: 400 });
+		}
 
 		const instance = await env.MY_WORKFLOW.create({
 			params: {
-				audio: Array.from(new Uint8Array(buffer)),
-				type: audio!.type
+				path: path,
+				name: name
 			}
 		});
 

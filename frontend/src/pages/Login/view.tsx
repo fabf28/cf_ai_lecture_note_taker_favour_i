@@ -1,0 +1,126 @@
+import type { FormEvent } from "react";
+import Card from "../../components/Card";
+import Input from "../../components/Input";
+import "./styles.scss";
+
+type LoginViewProps = {
+    email: string;
+    setEmail: (email: string) => void;
+    password: string;
+    setPassword: (password: string) => void;
+    confirmPassword: string;
+    setConfirmPassword: (confirmPassword: string) => void;
+    isSignUp: boolean;
+    loading: boolean;
+    error: string | null;
+    success: string | null;
+    handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+    toggleMode: () => void;
+};
+
+export default function LoginView({
+    email,
+    setEmail,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    isSignUp,
+    loading,
+    error,
+    success,
+    handleSubmit,
+    toggleMode,
+}: LoginViewProps) {
+    return (
+        <main className="container grid-lg d-flex flex-centered login-page-main" style={{ minHeight: "85vh" }}>
+            <div className="columns animate-fade-in" style={{ width: "100%" }}>
+                <div className="column col-8 col-mx-auto col-md-10 col-sm-12">
+                    <Card title={isSignUp ? "Create an Account" : "Welcome Back"}>
+                        <p className="login-subtitle text-gray mb-4">
+                            {isSignUp
+                                ? "Sign up to start transforming your lectures into notes"
+                                : "Sign in to access your AI lecture notes"}
+                        </p>
+
+                        {error && (
+                            <div className="toast toast-error mb-4">
+                                {error}
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="toast toast-success mb-4">
+                                {success}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="login-form">
+                            <Input
+                                id="email-input"
+                                label="Email Address"
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={setEmail}
+                                icon="mail"
+                                disabled={loading}
+                                required
+                                className="mb-3"
+                            />
+
+                            <Input
+                                id="password-input"
+                                label="Password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={setPassword}
+                                icon="people"
+                                disabled={loading}
+                                required
+                                className="mb-4"
+                            />
+
+                            {isSignUp && (
+                                <Input
+                                    id="confirm-password-input"
+                                    label="Confirm Password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={confirmPassword}
+                                    onChange={setConfirmPassword}
+                                    icon="people"
+                                    disabled={loading}
+                                    required
+                                    className="mb-4"
+                                />
+                            )}
+
+                            <div className="d-flex flex-column align-items-center">
+                                <button
+                                    type="submit"
+                                    className={`btn btn-lg custom-submit-btn ${loading ? "loading" : ""}`}
+                                    disabled={loading}
+                                >
+                                    {isSignUp ? "Create Account" : "Sign In"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-link custom-toggle-btn mt-3"
+                                    onClick={toggleMode}
+                                    disabled={loading}
+                                >
+                                    {isSignUp
+                                        ? "Already have an account? Sign In"
+                                        : "New to Lecture AI? Sign Up"}
+                                </button>
+                            </div>
+                        </form>
+                    </Card>
+                </div>
+            </div>
+        </main>
+    );
+}
