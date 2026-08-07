@@ -130,6 +130,10 @@ export default function Home() {
     async function uploadRecording() {
         if (!audioBlob || !session) return;
 
+        const userInput = window.prompt("Enter a name for this lecture:", "My Lecture");
+        if (userInput === null) return; // User cancelled notes creation
+        const lectureName = userInput.trim() || "Untitled Lecture";
+
         const path = `${session.user.id}/${crypto.randomUUID()}.webm`;
 
         const { error } = await supabase.storage
@@ -150,7 +154,7 @@ export default function Home() {
                 "Authorization": `Bearer ${session.access_token}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(path),
+            body: JSON.stringify({ path, name: lectureName }),
         });
 
         if (!res.ok) {
@@ -165,6 +169,23 @@ export default function Home() {
         navigate("/loading", { state: { id } });
     }
 
+    const handleDownloadAudio = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        if (!audioUrl) return;
+
+        const userInput = window.prompt("Enter a name for your audio file:", "lecture");
+        if (userInput === null) return; // User cancelled
+
+        const fileName = userInput.trim() ? `${userInput.trim()}.webm` : "lecture.webm";
+
+        const link = document.createElement("a");
+        link.href = audioUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <HomeView
             status={status}
@@ -175,6 +196,7 @@ export default function Home() {
             stopRecording={stopRecording}
             resetRecording={resetRecording}
             uploadRecording={uploadRecording}
+            onDownloadAudio={handleDownloadAudio}
         />
     );
 }
