@@ -18,7 +18,7 @@ export default function Loading() {
 
             if (status != "complete")
                 setStatus(dataRef.current.details.status);
-            if (dataRef.current.details.status == "complete" || dataRef.current.details.status == "errored")
+            if (dataRef.current.details.status == "complete")
                 setIsLoading(false);
             if (dataRef.current.details.output) {
                 setScriptStatus("✅");
@@ -45,7 +45,8 @@ export default function Loading() {
         const data = dataRef.current;
         const lectureId = dataRef.current.details.output?.lecture_id;
         const route = `/results/${lectureId}`;
-        navigate(route, { state: { data, status } });
+        console.log(route);
+        navigate(route, { state: { data, status, fromLanding: true } });
     };
 
 
