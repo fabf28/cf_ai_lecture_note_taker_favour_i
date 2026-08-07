@@ -13,15 +13,6 @@ export type Params = {
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 	async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
 
-		const getResponseText = (notesObj: any): string => {
-			if (!notesObj) return "";
-			if (typeof notesObj === "string") return notesObj.trim();
-			if (typeof notesObj.response === "string") return notesObj.response.trim();
-			if (notesObj.response && typeof notesObj.response.toString === "function") {
-				return notesObj.response.toString().trim();
-			}
-			return JSON.stringify(notesObj).trim();
-		};
 
 		//step 0 - download audio from Supabase
 		//const audioData = await step.do("download audio from supabase", async () => {
@@ -116,6 +107,22 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				return { notes: value };
 			},
 		);
+
+		const getResponseText = (notesObj: any): string => {
+			if (!notesObj) return "";
+			if (typeof notesObj === "string") return notesObj.trim();
+			
+			if (notesObj.response) {
+				if (typeof notesObj.response === "string") {
+					return notesObj.response.trim();
+				}
+				if (typeof notesObj.response === "object") {
+					return JSON.stringify(notesObj.response);
+				}
+			}
+			
+			return JSON.stringify(notesObj).trim();
+		};
 
 		//step 3 - save lecture to database
 		const lectureDbRow = await step.do("create lecture database row", async () => {
