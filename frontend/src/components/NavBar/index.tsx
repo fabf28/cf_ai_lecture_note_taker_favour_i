@@ -18,6 +18,11 @@ export default function Navbar() {
                 <Link className="navbar-brand mr-2" to="/">
                     Lecture AI
                 </Link>
+                {session && (
+                    <Link className="btn btn-link" to="/dashboard">
+                        Dashboard
+                    </Link>
+                )}
             </section>
 
             <section className="navbar-section">

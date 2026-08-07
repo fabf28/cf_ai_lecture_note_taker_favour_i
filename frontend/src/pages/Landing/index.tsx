@@ -5,7 +5,7 @@ import LandingView from "./view";
 export default function Loading() {
     const location = useLocation();
     const id = location.state?.id;
-    const dataRef = useRef({ details: { status: "", error: null, output: null } });
+    const dataRef = useRef({ details: { status: "", error: null, output: { lecture_id: "", name: "", transcript: "", notes: "" } } });
 
     const [status, setStatus] = useState("");
     const [scriptStatus, setScriptStatus] = useState("◌");
@@ -18,7 +18,7 @@ export default function Loading() {
 
             if (status != "complete")
                 setStatus(dataRef.current.details.status);
-            if (dataRef.current.details.status == "complete" || dataRef.current.details.status == "errored")
+            if (dataRef.current.details.status == "complete")
                 setIsLoading(false);
             if (dataRef.current.details.output) {
                 setScriptStatus("✅");
@@ -43,7 +43,10 @@ export default function Loading() {
 
     const nextPage = () => {
         const data = dataRef.current;
-        navigate("/results", { state: { data, status } });
+        const lectureId = dataRef.current.details.output?.lecture_id;
+        const route = `/results/${lectureId}`;
+        console.log(route);
+        navigate(route, { state: { data, status, fromLanding: true } });
     };
 
 

@@ -1,0 +1,58 @@
+.lecture-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lecture-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+    &:hover {
+        background-color: #fcfcfc;
+        border-color: rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        
+        .view-notes-arrow {
+            color: #5755d9;
+            transform: translateX(4px);
+        }
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.lecture-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lecture-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2f2f2f;
+}
+
+.lecture-date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.view-notes-arrow {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
