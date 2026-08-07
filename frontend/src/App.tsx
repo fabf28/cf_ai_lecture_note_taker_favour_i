@@ -16,7 +16,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/loading" element={<ProtectedRoute><Loading /></ProtectedRoute>} />
-          <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+          <Route path="/results/:id" element={<ProtectedRoute><Results /></ProtectedRoute>} />
         </Routes>
       </Layout>
     </AuthProvider>

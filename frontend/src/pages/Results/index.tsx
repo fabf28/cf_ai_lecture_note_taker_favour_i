@@ -3,16 +3,16 @@ import { useLocation } from "react-router-dom";
 import { generatePDF } from "../../utils/pdf";
 import { getLectureNotes, type LectureNotesData } from "../../utils/lectures";
 import ResultsView from "./view";
+import { useParams } from "next/navigation";
 
 export default function Results() {
     const location = useLocation();
-    const status = location.state?.status;
 
-    let lectureId = "";
-    let transcript = "";
-    let response = "";
-    const backupName = location.state?.data?.details?.params?.name;
+    //fetch id from url
+    const { id } = useParams();
+    const lectureId = id as string;
 
+    /**
     if (status === "errored") {
         const final = location.state?.data?.details?.__LOCAL_DEV_STEP_OUTPUTS || [];
         response = final[1]?.notes?.response || "";
@@ -24,18 +24,15 @@ export default function Results() {
         console.log(response);
 
         transcript = final[0]?.transcript || "";
-        if (final.length > 2) {
-            lectureId = final[2]?.id || "";
-        }
     }
-    else if (status === "complete") {
-        const final = location.state?.data?.details?.output;
-        if (final) {
-            response = final.notes?.response || "";
-            transcript = final.transcript || "";
-            lectureId = final.lecture_id || "";
-        }
-    }
+    */
+    //if (status === "complete") {
+
+    //backup process parsing data from worker response if not found in database
+    const final = location.state?.data?.details?.output;
+    const response = final?.notes?.response || "";
+    const transcript = final?.transcript || "";
+    const backupName = location.state?.data?.details?.params?.name;
 
     let data = { notes: [], summary: "" };
     try {
@@ -51,6 +48,8 @@ export default function Results() {
         console.error("Failed to parse response JSON:", err);
     }
     console.log(data);
+
+    //calling data from database
     const [notesData, setNotesData] = useState<LectureNotesData | null>(null);
     const [loading, setLoading] = useState(true);
 
