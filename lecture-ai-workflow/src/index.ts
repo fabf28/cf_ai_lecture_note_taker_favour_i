@@ -1,74 +1,38 @@
+import { Hono, Context, Next } from "hono";
+import { cors } from "hono/cors";
 import { authenticateRequest } from "./lib/supabase";
-import type { Params } from "./workflow";
+import { getStatus, startWorkflow } from "./controllers/workflowController";
 
-export { MyWorkflow } from "./workflow";
+export { MyWorkflow } from "./services/workflow";
 
-export default {
-	async fetch(req: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {
-		let url = new URL(req.url);
+const app = new Hono<{ Bindings: Env }>();
 
-		if (url.pathname.startsWith("/favicon")) {
-			return Response.json({}, { status: 404 });
-		}
+// Enable CORS for all routes
+app.use("*", cors());
 
-		// Get the status of an existing instance, if provided
-		let id = url.searchParams.get("instanceId");
-		if (id) {
-			let instance = await env.MY_WORKFLOW.get(id);
-			return Response.json({
-				details: await instance.status(),
-			});
-		}
+// Authentication Middleware using Supabase JWT
+const authMiddleware = async (c: Context, next: Next) => {
+	const { error: authError } = await authenticateRequest(c.req.raw, c.env);
 
-		// Authenticate request using Supabase JWT
-		const { error: authError } = await authenticateRequest(req, env);
-
-		if (authError) {
-			return Response.json({
+	if (authError) {
+		return c.json(
+			{
 				error: authError.message,
-				code: authError.code
-			}, {
-				status: authError.status
-			});
-		}
-
-		// Spawn a new instance and return the ID and status
-
-		//ensure path is string
-		let path = "";
-		let name = "Untitled Lecture";
-		const contentType = req.headers.get("content-type") || "";
-		if (contentType.includes("application/json")) {
-			const body = (await req.json()) as any;
-			if (typeof body === "string") {
-				path = body;
-			} else if (body && typeof body === "object") {
-				if ("path" in body) path = body.path;
-				if ("name" in body) name = body.name;
-			}
-		} else {
-			// fallback to text
-			path = await req.text();
-		}
-
-		//path clean up
-		path = path.trim().replace(/^"|"$/g, "");
-
-		if (!path) {
-			return Response.json({ error: "Missing path parameter" }, { status: 400 });
-		}
-
-		const instance = await env.MY_WORKFLOW.create({
-			params: {
-				path: path,
-				name: name
-			}
-		});
-
-		//return response
-		return Response.json({
-			id: instance.id,
-			details: await instance.status(),
-		});
-	},
+				code: authError.code,
+			},
+			authError.status as any
+		);
+	}
+	await next();
 };
+
+// Handle favicon requests
+app.get("/favicon*", (c) => c.json({}, 404));
+
+// Route GET /?instanceId=... to check status (public)
+app.get("/", getStatus);
+
+// Route POST / to create/trigger workflow (authenticated)
+app.post("/", authMiddleware, startWorkflow);
+
+export default app;

@@ -3,7 +3,7 @@ import {
 	WorkflowEvent,
 	WorkflowStep,
 } from "cloudflare:workers";
-import { getSupabaseAdmin } from "./lib/supabase";
+import { getSupabaseAdmin } from "../lib/supabase";
 
 export type Params = {
 	path: string;
@@ -111,7 +111,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 		const getResponseText = (notesObj: any): string => {
 			if (!notesObj) return "";
 			if (typeof notesObj === "string") return notesObj.trim();
-			
+
 			if (notesObj.response) {
 				if (typeof notesObj.response === "string") {
 					return notesObj.response.trim();
@@ -120,7 +120,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					return JSON.stringify(notesObj.response);
 				}
 			}
-			
+
 			return JSON.stringify(notesObj).trim();
 		};
 
