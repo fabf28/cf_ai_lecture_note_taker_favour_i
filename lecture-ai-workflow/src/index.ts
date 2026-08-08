@@ -4,6 +4,7 @@ import { withSupabase } from "@supabase/server/adapters/hono";
 import { AuthError } from "@supabase/server";
 import { getSupabaseConfig } from "./lib/supabase";
 import { getStatus, startWorkflow } from "./controllers/workflowController";
+import { searchNotes } from "./controllers/searchController";
 
 export { MyWorkflow } from "./workflow";
 
@@ -35,13 +36,22 @@ app.onError((err, c) => {
 	return c.json({ error: err.message || "Internal Server Error" }, 500);
 });
 
+
 // Handle favicon requests
 app.get("/favicon*", (c) => c.json({}, 404));
 
+
+//workflow routes
 // Route GET /?instanceId=... to check status (public)
 app.get("/", getStatus);
 
 // Route POST / to create/trigger workflow (authenticated)
 app.post("/", protect(), startWorkflow);
+
+
+
+//similarity search routes
+app.get("/search/all", protect(), searchNotes);
+
 
 export default app;
