@@ -48,7 +48,7 @@ export async function startWorkflow(c: Context) {
 		return c.json({ error: "Missing path parameter" }, 400);
 	}
 
-	const userId = c.var.supabaseContext?.userClaims?.sub;
+	const userId = c.var.supabaseContext?.userClaims?.id;
 	if (!userId) {
 		return c.json({ error: "Unauthorized: Missing user ID" }, 401);
 	}

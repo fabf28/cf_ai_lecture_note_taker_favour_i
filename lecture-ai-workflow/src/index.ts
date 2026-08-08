@@ -5,7 +5,7 @@ import { AuthError } from "@supabase/server";
 import { getSupabaseConfig } from "./lib/supabase";
 import { getStatus, startWorkflow } from "./controllers/workflowController";
 
-export { MyWorkflow } from "./services/workflow";
+export { MyWorkflow } from "./workflow";
 
 const app = new Hono<{ Bindings: Env }>();
 

@@ -3,7 +3,7 @@ import {
 	WorkflowEvent,
 	WorkflowStep,
 } from "cloudflare:workers";
-import { getSupabaseAdmin } from "../lib/supabase";
+import { getSupabaseAdmin } from "./lib/supabase";
 
 export type Params = {
 	path: string;
@@ -164,7 +164,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			const path = event.payload.path;
 			const supabase = getSupabaseAdmin(this.env);
 
-			let notesList: { phrase: string; definition: string }[] = [];
+			let notesList: { phrase: string; definition: string; embedding: number[] }[] = [];
 			try {
 				const responseText = getResponseText(result.notes);
 				const fullJsonText = responseText.endsWith("}") ? responseText : responseText + "}";
@@ -174,11 +174,18 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				console.error("Failed to parse notes JSON:", e);
 			}
 
-			const rowsToInsert = notesList.map((item) => ({
+			//embed notes and save to RLS enabled table called vectors
+			const chunks = notesList.map((note) => note.phrase + note.definition);
+			const embeddings = await this.env.AI.run("@cf/baai/bge-base-en-v1.5", {
+				text: chunks
+			}) as { data: number[][] };
+
+			const rowsToInsert = notesList.map((item, i) => ({
 				keyword: item.phrase || "",
 				definition: item.definition || "",
 				lecture_id: lectureDbRow.id,
-				user_id: event.payload.userId
+				user_id: event.payload.userId,
+				embedding: embeddings.data[i]
 			}));
 
 			if (rowsToInsert.length > 0) {
