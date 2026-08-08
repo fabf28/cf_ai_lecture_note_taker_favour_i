@@ -19,9 +19,14 @@ export default function Navbar() {
                     Lecture AI
                 </Link>
                 {session && (
-                    <Link className="btn btn-link" to="/dashboard">
-                        Dashboard
-                    </Link>
+                    <>
+                        <Link className="btn btn-link" to="/dashboard">
+                            Dashboard
+                        </Link>
+                        <Link className="btn btn-link" to="/search">
+                            Search
+                        </Link>
+                    </>
                 )}
             </section>
 
