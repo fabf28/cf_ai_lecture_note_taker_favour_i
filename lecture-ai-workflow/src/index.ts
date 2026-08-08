@@ -1,74 +1,57 @@
-import { authenticateRequest } from "./lib/supabase";
-import type { Params } from "./workflow";
+import { Hono, Context, Next } from "hono";
+import { cors } from "hono/cors";
+import { withSupabase } from "@supabase/server/adapters/hono";
+import { AuthError } from "@supabase/server";
+import { getSupabaseConfig } from "./lib/supabase";
+import { getStatus, startWorkflow } from "./controllers/workflowController";
+import { searchNotes } from "./controllers/searchController";
 
 export { MyWorkflow } from "./workflow";
 
-export default {
-	async fetch(req: Request, env: Env, executionCtx: ExecutionContext): Promise<Response> {
-		let url = new URL(req.url);
+const app = new Hono<{ Bindings: Env }>();
 
-		if (url.pathname.startsWith("/favicon")) {
-			return Response.json({}, { status: 404 });
-		}
+// Enable CORS for all routes
+app.use("*", cors());
 
-		// Get the status of an existing instance, if provided
-		let id = url.searchParams.get("instanceId");
-		if (id) {
-			let instance = await env.MY_WORKFLOW.get(id);
-			return Response.json({
-				details: await instance.status(),
-			});
-		}
-
-		// Authenticate request using Supabase JWT
-		const { error: authError } = await authenticateRequest(req, env);
-
-		if (authError) {
-			return Response.json({
-				error: authError.message,
-				code: authError.code
-			}, {
-				status: authError.status
-			});
-		}
-
-		// Spawn a new instance and return the ID and status
-
-		//ensure path is string
-		let path = "";
-		let name = "Untitled Lecture";
-		const contentType = req.headers.get("content-type") || "";
-		if (contentType.includes("application/json")) {
-			const body = (await req.json()) as any;
-			if (typeof body === "string") {
-				path = body;
-			} else if (body && typeof body === "object") {
-				if ("path" in body) path = body.path;
-				if ("name" in body) name = body.name;
-			}
-		} else {
-			// fallback to text
-			path = await req.text();
-		}
-
-		//path clean up
-		path = path.trim().replace(/^"|"$/g, "");
-
-		if (!path) {
-			return Response.json({ error: "Missing path parameter" }, { status: 400 });
-		}
-
-		const instance = await env.MY_WORKFLOW.create({
-			params: {
-				path: path,
-				name: name
-			}
-		});
-
-		//return response
-		return Response.json({
-			id: instance.id,
-			details: await instance.status(),
-		});
-	},
+// Reusable middleware helper to protect any route and map Cloudflare's c.env bindings
+const protect = () => async (c: Context, next: Next) => {
+	const middleware = withSupabase({
+		auth: "user",
+		env: getSupabaseConfig(c.env),
+	});
+	return middleware(c, next);
 };
+
+// Error handler to format Supabase AuthError JSON responses
+app.onError((err, c) => {
+	if (err.cause instanceof AuthError) {
+		return c.json(
+			{
+				error: err.message,
+				code: err.cause.code,
+			},
+			err.cause.status as any
+		);
+	}
+	return c.json({ error: err.message || "Internal Server Error" }, 500);
+});
+
+
+// Handle favicon requests
+app.get("/favicon*", (c) => c.json({}, 404));
+
+
+//workflow routes
+// Route GET /?instanceId=... to check status (public)
+app.get("/", getStatus);
+
+// Route POST / to create/trigger workflow (authenticated)
+app.post("/", protect(), startWorkflow);
+
+
+
+//similarity search routes
+app.get("/search/all", protect(), searchNotes);
+
+
+export default app;
