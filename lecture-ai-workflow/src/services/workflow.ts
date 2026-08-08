@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from "../lib/supabase";
 export type Params = {
 	path: string;
 	name: string;
+	userId: string;
 };
 
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
@@ -146,7 +147,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					transcript: text.transcript,
 					summary: summary,
 					name: event.payload.name,
-					user_id: path.split('/')[0]
+					user_id: event.payload.userId
 				})
 				.select('id')
 				.single();
@@ -177,7 +178,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				keyword: item.phrase || "",
 				definition: item.definition || "",
 				lecture_id: lectureDbRow.id,
-				user_id: path.split('/')[0]
+				user_id: event.payload.userId
 			}));
 
 			if (rowsToInsert.length > 0) {

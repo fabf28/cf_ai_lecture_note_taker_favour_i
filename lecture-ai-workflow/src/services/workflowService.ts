@@ -3,11 +3,12 @@ export async function getWorkflowInstanceStatus(env: Env, instanceId: string) {
 	return await instance.status();
 }
 
-export async function createWorkflowInstance(env: Env, path: string, name: string) {
+export async function createWorkflowInstance(env: Env, path: string, name: string, userId: string) {
 	const instance = await env.MY_WORKFLOW.create({
 		params: {
 			path: path,
 			name: name,
+			userId: userId,
 		},
 	});
 	return {

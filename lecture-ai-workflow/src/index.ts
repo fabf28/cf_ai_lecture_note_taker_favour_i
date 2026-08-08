@@ -1,6 +1,8 @@
 import { Hono, Context, Next } from "hono";
 import { cors } from "hono/cors";
-import { authenticateRequest } from "./lib/supabase";
+import { withSupabase } from "@supabase/server/adapters/hono";
+import { AuthError } from "@supabase/server";
+import { getSupabaseConfig } from "./lib/supabase";
 import { getStatus, startWorkflow } from "./controllers/workflowController";
 
 export { MyWorkflow } from "./services/workflow";
@@ -10,21 +12,28 @@ const app = new Hono<{ Bindings: Env }>();
 // Enable CORS for all routes
 app.use("*", cors());
 
-// Authentication Middleware using Supabase JWT
-const authMiddleware = async (c: Context, next: Next) => {
-	const { error: authError } = await authenticateRequest(c.req.raw, c.env);
+// Reusable middleware helper to protect any route and map Cloudflare's c.env bindings
+const protect = () => async (c: Context, next: Next) => {
+	const middleware = withSupabase({
+		auth: "user",
+		env: getSupabaseConfig(c.env),
+	});
+	return middleware(c, next);
+};
 
-	if (authError) {
+// Error handler to format Supabase AuthError JSON responses
+app.onError((err, c) => {
+	if (err.cause instanceof AuthError) {
 		return c.json(
 			{
-				error: authError.message,
-				code: authError.code,
+				error: err.message,
+				code: err.cause.code,
 			},
-			authError.status as any
+			err.cause.status as any
 		);
 	}
-	await next();
-};
+	return c.json({ error: err.message || "Internal Server Error" }, 500);
+});
 
 // Handle favicon requests
 app.get("/favicon*", (c) => c.json({}, 404));
@@ -33,6 +42,6 @@ app.get("/favicon*", (c) => c.json({}, 404));
 app.get("/", getStatus);
 
 // Route POST / to create/trigger workflow (authenticated)
-app.post("/", authMiddleware, startWorkflow);
+app.post("/", protect(), startWorkflow);
 
 export default app;
