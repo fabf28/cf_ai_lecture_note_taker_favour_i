@@ -20,10 +20,10 @@ export default function Navbar() {
                 </Link>
                 {session && (
                     <>
-                        <Link className="btn btn-link" to="/dashboard">
+                        <Link className="navbar-brand mr-2" to="/dashboard">
                             Dashboard
                         </Link>
-                        <Link className="btn btn-link" to="/search">
+                        <Link className="navbar-brand mr-2" to="/search">
                             Search
                         </Link>
                     </>
@@ -35,12 +35,16 @@ export default function Navbar() {
                     session ? (
                         <div className="navbar-auth">
                             <span className="user-email text-gray mr-2 hide-sm">{session.user?.email}</span>
-                            <button className="btn btn-sm btn-link" onClick={handleSignOut}>
+                            <button 
+                                className="navbar-brand" 
+                                style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }} 
+                                onClick={handleSignOut}
+                            >
                                 Sign Out
                             </button>
                         </div>
                     ) : (
-                        <Link className="btn btn-sm btn-primary" to="/login">
+                        <Link className="navbar-brand" to="/login">
                             Sign In
                         </Link>
                     )
