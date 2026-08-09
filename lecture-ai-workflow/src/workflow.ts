@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from "./lib/supabase";
 export type Params = {
 	path: string;
 	name: string;
+	userId: string;
 };
 
 export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
@@ -111,7 +112,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 		const getResponseText = (notesObj: any): string => {
 			if (!notesObj) return "";
 			if (typeof notesObj === "string") return notesObj.trim();
-			
+
 			if (notesObj.response) {
 				if (typeof notesObj.response === "string") {
 					return notesObj.response.trim();
@@ -120,7 +121,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					return JSON.stringify(notesObj.response);
 				}
 			}
-			
+
 			return JSON.stringify(notesObj).trim();
 		};
 
@@ -146,7 +147,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 					transcript: text.transcript,
 					summary: summary,
 					name: event.payload.name,
-					user_id: path.split('/')[0]
+					user_id: event.payload.userId
 				})
 				.select('id')
 				.single();
@@ -163,7 +164,7 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 			const path = event.payload.path;
 			const supabase = getSupabaseAdmin(this.env);
 
-			let notesList: { phrase: string; definition: string }[] = [];
+			let notesList: { phrase: string; definition: string; embedding: number[] }[] = [];
 			try {
 				const responseText = getResponseText(result.notes);
 				const fullJsonText = responseText.endsWith("}") ? responseText : responseText + "}";
@@ -173,11 +174,18 @@ export class MyWorkflow extends WorkflowEntrypoint<Env, Params> {
 				console.error("Failed to parse notes JSON:", e);
 			}
 
-			const rowsToInsert = notesList.map((item) => ({
+			//embed notes and save to RLS enabled table called vectors
+			const chunks = notesList.map((note) => note.phrase + note.definition);
+			const embeddings = await this.env.AI.run("@cf/baai/bge-base-en-v1.5", {
+				text: chunks
+			}) as { data: number[][] };
+
+			const rowsToInsert = notesList.map((item, i) => ({
 				keyword: item.phrase || "",
 				definition: item.definition || "",
 				lecture_id: lectureDbRow.id,
-				user_id: path.split('/')[0]
+				user_id: event.payload.userId,
+				embedding: embeddings.data[i]
 			}));
 
 			if (rowsToInsert.length > 0) {
